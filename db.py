@@ -1,15 +1,16 @@
-import os
-from sqlmodel import create_engine, SQLModel
-from dotenv import load_dotenv
+from sqlmodel import SQLModel, Field
+from typing import Optional
+from datetime import datetime
+from fastapi import FastAPI
+from sqlalchemy.ext.asyncio import create_async_engine
+from environs import Env
 
-load_dotenv()
+env = Env()  # Создаем экземпляр класса Env
+env.read_env()  # Методом read_env() читаем файл .env и загружаем из него переменные в окружение
 
-DATABASE_URL = (
-    f"postgresql+asyncpg://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@"
-    f"{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
-)
+DATABASE_URL=f"postgresql+asyncpg://{env('POSTGRES_USER')}:{env('POSTGRES_PASSWORD')}@{env('POSTGRES_HOST')}:5432/{env('POSTGRES_DB')}"
 
-engine = create_engine(DATABASE_URL, echo=True)
+engine = create_async_engine(DATABASE_URL)
 
 async def init_db():
     from sqlmodel import SQLModel
@@ -20,3 +21,21 @@ async def init_db():
 def get_session():
     from sqlmodel.ext.asyncio.session import AsyncSession
     return AsyncSession(engine)
+
+class User(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    first_name: str
+    last_name: str
+    email: str
+    phone_number: str
+    registration_date: datetime = Field(default_factory=datetime.utcnow)
+    password_hash: str
+
+
+app = FastAPI()
+
+# Инициализация базы
+@app.on_event("startup")
+async def startup_event():
+    await init_db()
+

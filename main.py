@@ -9,11 +9,6 @@ from passlib.hash import bcrypt
 import jwt
 import asyncio
 
-
-# from dotenv import load_dotenv
-# load_dotenv()
-
-
 app = FastAPI()
 
 # Инициализация базы

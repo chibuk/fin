@@ -6,5 +6,4 @@ from environs import Env
 env = Env()  # Создаем экземпляр класса Env
 env.read_env()  # Методом read_env() читаем файл .env и загружаем из него переменные в окружение
 
-print(env('SECRET_KEY'))
-print(env('POSTGRES_USER'))
+DATABASE_URL=f"postgresql+asyncpg://{env('POSTGRES_USER')}:{env('POSTGRES_PASSWORD')}@{env('POSTGRES_HOST')}:5432/{env('POSTGRES_DB')}"
